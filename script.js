@@ -1,7 +1,7 @@
 // Ganti URL ini dengan URL CSV publikasi dari Google Sheets Anda
-const URL_NILAI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=0&single=true&output=csv';
-const URL_PEGAWAI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=771208512&single=true&output=csv';
-const URL_RATING = 'https://script.google.com/macros/s/AKfycbzsXQdghuAiMjHuUdofshksTASXCoUyyAH67c-kGeudw42-jiu-AKwBdS3PqI1N2Dzg/execs';
+const URL_NILAI = https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=0&single=true&output=csv;
+const URL_PEGAWAI = https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=771208512&single=true&output=csv;
+const URL_RATING = https://script.google.com/macros/s/AKfycbwR1xztxP9wtwFDBDgwKhvyQkTYs66cDGrcqwhEb4bTBFAb-KJyja1P4DTdQ0_o6Bbs0w/exec;
 
 let currentCardIndex = 0;
 let nilaiData = [];
