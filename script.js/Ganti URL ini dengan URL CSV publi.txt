@@ -1,0 +1,156 @@
+// Ganti URL ini dengan URL CSV publikasi dari Google Sheets Anda
+const URL_NILAI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=0&single=true&output=csv';
+const URL_PEGAWAI = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSLRAyik2jDPRzl0lotNzPLsp4MCDPbC3qREDZ2JiW8TlxcJz_ruO7cDzU80EFvtfI0eJxo3mJjuvAm/pub?gid=771208512&single=true&output=csv';
+const URL_RATING = 'https://script.google.com/macros/s/AKfycbwvK2yXnVPljS9y_cTBuR4yZbE7su7XN3s8J60uwJSYTodSNjuMVNUBLq0duJrerVfmTQ/exec'; // Ini akan terhubung ke Apps Script
+
+let currentCardIndex = 0;
+let nilaiData = [];
+let pegawaiData = [];
+
+// ... (kode HTML dan CSS tidak berubah)
+
+// Fungsi untuk mengonversi CSV string menjadi array of objects
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',').map(header => header.trim()); // Memastikan nama header bersih dari spasi
+    return lines.slice(1).map(line => {
+        const data = line.split(',');
+        const obj = {};
+        headers.forEach((header, i) => {
+            obj[header] = data[i].trim();
+        });
+        return obj;
+    });
+}
+
+// ... (bagian lainnya dari fetchData)
+
+// Menampilkan kartu
+function renderCards() {
+    cardContainer.innerHTML = '';
+    nilaiData.forEach((nilai, index) => {
+        const card = document.createElement('div');
+        card.className = 'ethics-card';
+        card.id = `card-${index}`;
+        if (index === currentCardIndex) {
+            card.classList.add('active');
+        }
+        
+        // Sesuaikan nama properti di sini
+        const warna_heks = nilai['Warna Hex'] || '#00A551'; 
+        const gambar_url = nilai['Supergrafis'] || '';
+        const nama_nilai = nilai['Nilai'] || '';
+        const deskripsi = nilai['Deskripsi'] || '';
+
+        card.style.backgroundColor = warna_heks;
+
+        const supergraphic = document.createElement('div');
+        supergraphic.className = 'supergraphic-overlay';
+        if (gambar_url) {
+            supergraphic.style.backgroundImage = `url(${gambar_url})`;
+        }
+
+        card.innerHTML = `
+            <h3 class="card-title">${nama_nilai}</h3>
+            <p class="card-description">${deskripsi}</p>
+        `;
+        card.appendChild(supergraphic);
+        cardContainer.appendChild(card);
+    });
+    updateButtonStates();
+}
+
+// ... (bagian lainnya dari renderRatingSection)
+
+function renderRatingSection() {
+    // ... (kode rendering section)
+    pegawaiData.forEach(pegawai => {
+        const pegawaiBlock = document.createElement('div');
+        pegawaiBlock.className = 'pegawai-rating-block';
+        
+        // Sesuaikan nama properti di sini
+        const nama_pegawai = pegawai['Nama'];
+        const id_pegawai = pegawai['ID Pegawai'];
+        
+        pegawaiBlock.innerHTML = `<h3 data-id="${id_pegawai}">${nama_pegawai}</h3>`;
+
+        nilaiData.forEach(nilai => {
+            const ratingInput = document.createElement('div');
+            ratingInput.className = 'rating-stars';
+            
+            // Sesuaikan nama properti di sini
+            ratingInput.dataset.pegawaiId = id_pegawai;
+            ratingInput.dataset.nilai = nilai['Nilai'];
+            ratingInput.innerHTML = `<span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>`;
+            
+            // Menambahkan event listener untuk interaksi bintang
+            ratingInput.querySelectorAll('span').forEach((star, starIndex) => {
+                star.addEventListener('click', () => {
+                    // Update tampilan bintang
+                    ratingInput.querySelectorAll('span').forEach((s, sIndex) => {
+                        s.classList.toggle('filled', sIndex <= starIndex);
+                    });
+                    
+                    // Simpan nilai rating sementara
+                    ratingInput.dataset.ratingValue = starIndex + 1;
+                });
+            });
+            
+            pegawaiBlock.appendChild(ratingInput);
+        });
+
+        ratingForm.appendChild(pegawaiBlock);
+    });
+}
+
+// ... (sisanya dari kode JavaScript)
+
+// Event listener untuk tombol kirim rating
+submitBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    const allRatings = [];
+    const ratingBlocks = document.querySelectorAll('.pegawai-rating-block');
+
+    ratingBlocks.forEach(block => {
+        const id_pegawai = block.querySelector('h3').dataset.id;
+        const ratingInputs = block.querySelectorAll('.rating-stars');
+        
+        ratingInputs.forEach(input => {
+            const nilai_berakhlak = input.dataset.nilai;
+            const bintang = input.dataset.ratingValue || 0; // Ambil nilai yang sudah disimpan
+            
+            if (bintang > 0) {
+                allRatings.push({
+                    id_pegawai: id_pegawai,
+                    nilai_berakhlak: nilai_berakhlak,
+                    bintang: parseInt(bintang)
+                });
+            }
+        });
+    });
+
+    if (allRatings.length > 0) {
+        try {
+            const response = await fetch(URL_RATING, {
+                method: 'POST',
+                body: JSON.stringify(allRatings),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                alert('Rating berhasil dikirim! Leaderboard akan terakumulasi.');
+                window.location.reload(); // Muat ulang halaman setelah berhasil
+            } else {
+                alert('Gagal mengirim rating. Silakan coba lagi.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+        }
+    } else {
+        alert('Silakan berikan setidaknya satu rating sebelum mengirim.');
+    }
+});
